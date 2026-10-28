@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b2a1d" />
+      <stop offset="1" stop-color="#1a1410" />
+    </linearGradient>
+    <radialGradient id="hole" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#0b0806" />
+      <stop offset="0.75" stop-color="#120d09" />
+      <stop offset="1" stop-color="#4a3323" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#wood)" />
+  <circle cx="256" cy="286" r="118" fill="url(#hole)" />
+  <circle cx="256" cy="286" r="118" fill="none" stroke="#c8913f" stroke-width="6" opacity="0.55" />
+  <g stroke="#e8d3ae" stroke-linecap="round" opacity="0.9">
+    <line x1="256" y1="40" x2="256" y2="472" stroke-width="3" />
+    <line x1="232" y1="40" x2="232" y2="472" stroke-width="2.4" />
+    <line x1="280" y1="40" x2="280" y2="472" stroke-width="2.8" />
+    <line x1="210" y1="40" x2="210" y2="472" stroke-width="2" />
+    <line x1="302" y1="40" x2="302" y2="472" stroke-width="2.2" />
+    <line x1="190" y1="40" x2="190" y2="472" stroke-width="1.6" />
+  </g>
+</svg>

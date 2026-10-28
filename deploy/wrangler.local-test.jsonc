@@ -1,0 +1,14 @@
+{
+  // Local-only config used to run the deploy setup in workerd before uploading.
+  // It mirrors freebuff.deploy.json (same entrypoint, compatibility date and asset
+  // directory) so the local check exercises the same configuration.
+  // Run: npx wrangler dev --config deploy/wrangler.local-test.jsonc --port 8799
+  "name": "cuerda-local-test",
+  "main": "worker.js",
+  "compatibility_date": "2025-07-18",
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  }
+}
