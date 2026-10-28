@@ -6,6 +6,7 @@ import { formatMinutes, goalCountdown, todayKey, WEEKDAY_SHORT } from "../engine
 import { PRINCIPLES } from "../data/methods";
 import { technique as getTechnique } from "../data/library";
 import { Sheet } from "../components/Sheet";
+import { SectionHelp } from "../components/SectionHelp";
 
 const METHOD_LABEL: Record<MethodId, string> = {
   slow: "slow pass",
@@ -39,6 +40,8 @@ export function Week() {
 
   return (
     <div className="view">
+      <SectionHelp topic="week" />
+
       <div className="card card--accent">
         <div className="row row--between">
           <span className="chip chip--accent">{phaseInfo.label}</span>

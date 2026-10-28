@@ -256,6 +256,8 @@ export interface Profile {
   protectHands: boolean;
   /** The piece the whole plan is built around, if the player has named one. */
   focusPieceId?: string;
+  /** Which first-run tour has been seen (or skipped); older tours are below this. */
+  tourVersion?: number;
   createdAt: string;
 }
 

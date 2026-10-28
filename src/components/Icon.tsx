@@ -1,5 +1,17 @@
 interface IconProps {
-  name: "today" | "week" | "pieces" | "progress" | "library" | "gear" | "play" | "close" | "check" | "plus" | "minus";
+  name:
+    | "today"
+    | "week"
+    | "pieces"
+    | "progress"
+    | "library"
+    | "gear"
+    | "play"
+    | "close"
+    | "check"
+    | "plus"
+    | "minus"
+    | "help";
   size?: number;
 }
 
@@ -15,6 +27,7 @@ const PATHS: Record<IconProps["name"], string> = {
   check: "M5 13l4 4L19 7",
   plus: "M12 5v14M5 12h14",
   minus: "M5 12h14",
+  help: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.4 9.2a2.7 2.7 0 015.2.9c0 1.8-2.6 2.1-2.6 4M12 17.2h.01",
 };
 
 export function Icon({ name, size = 22 }: IconProps) {

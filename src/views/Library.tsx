@@ -3,6 +3,7 @@ import { TECHNIQUES, WARMUPS } from "../data/library";
 import { PRINCIPLES } from "../data/methods";
 import { useStore } from "../store";
 import type { Technique } from "../types";
+import { SectionHelp } from "../components/SectionHelp";
 
 type Tab = "techniques" | "warmups" | "principles";
 
@@ -32,6 +33,8 @@ export function Library() {
 
   return (
     <div className="view">
+      <SectionHelp topic="library" />
+
       <div className="segmented">
         <button type="button" className={`seg${tab === "techniques" ? " seg--on" : ""}`} onClick={() => setTab("techniques")}>
           Techniques

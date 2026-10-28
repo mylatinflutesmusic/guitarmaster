@@ -4,16 +4,18 @@ import type { Piece, RepStatus } from "../types";
 import { useStore } from "../store";
 import { daysSinceTouched } from "../engine/stats";
 import { technique as getTechnique } from "../data/library";
-import { STARTERS } from "../data/starters";
 import { PieceSheet } from "../components/PieceSheet";
+import { MusicStandSheet } from "../components/MusicStandSheet";
 import { Icon } from "../components/Icon";
+import { SectionHelp } from "../components/SectionHelp";
 
 const STATUS_LABEL: Record<RepStatus, string> = Object.fromEntries(REP_STATUSES.map((s) => [s.id, s.label])) as Record<RepStatus, string>;
 const BLURB: Record<RepStatus, string> = Object.fromEntries(REP_STATUSES.map((s) => [s.id, s.blurb])) as Record<RepStatus, string>;
 
 export function Pieces() {
-  const { state, week, addPiece, updatePiece, removePiece, setFocusPiece } = useStore();
+  const { state, week, updatePiece, removePiece, setFocusPiece } = useStore();
   const [editing, setEditing] = useState<Piece | "new" | null>(null);
+  const [stand, setStand] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const passes = new Map(week.pieces.map((p) => [p.pieceId, p]));
@@ -22,16 +24,18 @@ export function Pieces() {
 
   return (
     <div className="view">
+      <SectionHelp topic="pieces" />
+
       <div className="card">
         <div className="row row--between">
           <h2 className="section-title">Repertoire</h2>
-          <button type="button" className="btn btn--small btn--primary" onClick={() => setEditing("new")}>
+          <button type="button" className="btn btn--small btn--primary" onClick={() => setStand(true)}>
             <Icon name="plus" size={16} /> Add
           </button>
         </div>
         <p className="tiny muted" style={{ marginTop: 6 }}>
-          Add anything you want to play — your own suggestion is enough. The state of a piece decides how it is worked: one you are still
-          learning gets slow passes and isolation, one you are polishing gets ladders and run-throughs.
+          Add opens the music stand: pieces that suit your level, plus anything you suggest yourself. The state of a piece decides how it
+          is worked — one you are still learning gets slow passes and isolation, one you are polishing gets ladders and run-throughs.
         </p>
       </div>
 
@@ -153,30 +157,21 @@ export function Pieces() {
             Nothing on the music stand yet. Add the piece you actually want to play — a suggestion from your teacher, something you heard,
             anything — and the plan will be built around it.
           </div>
-          <div className="label" style={{ marginTop: 6 }}>
-            Or start from a common {state.profile.level} piece
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-            {STARTERS[state.profile.level].map((starter) => (
-              <div key={starter.title} className="option">
-                <span style={{ flex: 1 }}>
-                  <span className="option__title">{starter.title}</span>
-                  <span className="option__blurb" style={{ display: "block" }}>
-                    {starter.composer} · {starter.note}
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  className="btn btn--small"
-                  onClick={() => addPiece({ title: starter.title, composer: starter.composer, status: "learning", priority: 2 })}
-                >
-                  Add
-                </button>
-              </div>
-            ))}
-          </div>
+          <button type="button" className="btn btn--block" style={{ marginTop: 8 }} onClick={() => setStand(true)}>
+            <Icon name="plus" size={16} /> What's on the music stand?
+          </button>
         </div>
       )}
+
+      {stand ? (
+        <MusicStandSheet
+          onClose={() => setStand(false)}
+          onSuggest={() => {
+            setStand(false);
+            setEditing("new");
+          }}
+        />
+      ) : null}
 
       {editing ? (
         <PieceSheet

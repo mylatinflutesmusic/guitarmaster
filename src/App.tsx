@@ -9,10 +9,11 @@ import { Progress } from "./views/Progress";
 import { Library } from "./views/Library";
 import { Setup } from "./views/Setup";
 import { Icon } from "./components/Icon";
+import { TOUR_VERSION, Walkthrough } from "./components/Walkthrough";
 import { longDate } from "./engine/dates";
 
 export function App() {
-  const { state, ready } = useStore();
+  const { state, ready, updateProfile } = useStore();
   const [tab, setTab] = useState<TabId>("today");
   const [editing, setEditing] = useState(false);
 
@@ -54,6 +55,15 @@ export function App() {
         {tab === "library" ? <Library /> : null}
       </div>
       <TabBar active={tab} onChange={setTab} />
+      {(state.profile.tourVersion ?? 0) < TOUR_VERSION ? (
+        <Walkthrough
+          onNavigate={setTab}
+          onDone={() => {
+            updateProfile({ tourVersion: TOUR_VERSION });
+            setTab("today");
+          }}
+        />
+      ) : null}
     </>
   );
 }

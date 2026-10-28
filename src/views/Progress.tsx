@@ -4,6 +4,7 @@ import { addDaysKey, formatMinutes, shortDate, startOfWeek, toKey, todayKey } fr
 import { lastNDays, logStreak, splitMinutes, tempoChange } from "../engine/stats";
 import { TECHNIQUES } from "../data/library";
 import { Icon } from "../components/Icon";
+import { SectionHelp } from "../components/SectionHelp";
 
 export function Progress() {
   const { state, addTempo, deleteTempo, deleteLog } = useStore();
@@ -29,6 +30,8 @@ export function Progress() {
 
   return (
     <div className="view">
+      <SectionHelp topic="progress" />
+
       <div className="stat-grid">
         <div className="stat">
           <div className="stat__value">{streak}</div>

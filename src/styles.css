@@ -123,6 +123,38 @@ h4 {
   animation: fade 0.18s ease;
 }
 
+/* --------------------------------------------------------- section heads */
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 2px 0;
+}
+
+.section-head__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.section-head__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.icon-btn--help {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  color: var(--accent);
+  border-color: #6a4f27;
+  background: var(--accent-soft);
+}
+
 @keyframes fade {
   from {
     opacity: 0;
@@ -740,6 +772,34 @@ h4 {
   color: var(--accent);
 }
 
+.tab__icon {
+  display: grid;
+  place-items: center;
+  height: 26px;
+}
+
+/* Today is where the guitarist actually practises: the only raised tab. */
+.tab--main .tab__icon {
+  min-width: 50px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid #6a4f27;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tab--main.tab--on .tab__icon {
+  border-color: var(--accent);
+  background: #d8a44a2e;
+}
+
+.tab--main .tab__label {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
 .tab__label {
   font-size: 10px;
   letter-spacing: 0.04em;
@@ -856,4 +916,65 @@ h4 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* ---------------------------------------------------------- walkthrough */
+
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* Transparent catcher: the ring's huge shadow does the dimming, so the spotlit
+   element stays readable while taps outside the card go nowhere. */
+.tour__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+}
+
+.tour__ring {
+  position: fixed;
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px #060403e3;
+  pointer-events: none;
+  transition: top 0.16s ease, left 0.16s ease, width 0.16s ease, height 0.16s ease;
+}
+
+.tour__card {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  margin: 0 auto;
+  max-width: 520px;
+  z-index: 2;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid #6a4f27;
+  background: #241d15;
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
+.tour__dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.tour__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #4a3a26;
+  transition: width 0.16s ease, background 0.16s ease;
+}
+
+.tour__dot--on {
+  width: 18px;
+  background: var(--accent);
 }
