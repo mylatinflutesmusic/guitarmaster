@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import { LEVELS } from "../types";
-import type { Level, RepStatus } from "../types";
-import { WEEKDAY_SHORT } from "../engine/dates";
+import type { AppState, Level, RepStatus } from "../types";
+import { WEEKDAY_SHORT, todayKey } from "../engine/dates";
+import { backupFilename, backupJson, parseBackup } from "../store/backup";
+import type { ParsedBackup } from "../store/backup";
 import { focusChoices } from "../data/library";
 import { STARTERS } from "../data/starters";
 import { useStore } from "../store";
@@ -17,10 +20,16 @@ interface Draft {
   protectHands: boolean;
 }
 
+const countText = (state: AppState) =>
+  `${state.pieces.length} piece${state.pieces.length === 1 ? "" : "s"}, ${state.log.length} session${state.log.length === 1 ? "" : "s"} and ${state.tempos.length} tempo mark${state.tempos.length === 1 ? "" : "s"}`;
+
 export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: () => void }) {
-  const { state, updateProfile, addPiece, removeAll } = useStore();
+  const { state, updateProfile, addPiece, removeAll, restoreState } = useStore();
   const profile = state.profile;
   const [confirmErase, setConfirmErase] = useState(false);
+  const [pendingRestore, setPendingRestore] = useState<ParsedBackup | null>(null);
+  const [dataMsg, setDataMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [draft, setDraft] = useState<Draft>({
     level: profile.level,
@@ -73,6 +82,63 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
       addPiece({ title: starter.title, composer: starter.composer, status, priority: 2 });
     }
     onDone?.();
+  };
+
+  const exportBackup = () => {
+    const blob = new Blob([backupJson(state)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = backupFilename(todayKey());
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Revoke after the browser has taken the file, not before.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setDataMsg({ kind: "ok", text: `Backup downloaded — ${countText(state)}.` });
+  };
+
+  const chooseBackup = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      setPendingRestore(null);
+      setDataMsg({ kind: "error", text: "That file could not be read." });
+      return;
+    }
+    const parsed = parseBackup(text);
+    if ("error" in parsed) {
+      setPendingRestore(null);
+      setDataMsg({ kind: "error", text: parsed.error });
+      return;
+    }
+    setDataMsg(null);
+    setPendingRestore(parsed);
+  };
+
+  const applyRestore = () => {
+    if (!pendingRestore) return;
+    const restored = pendingRestore.state;
+    restoreState(restored);
+    // Keep the settings form in step with what was restored, so tapping “Save
+    // changes” afterwards cannot put the old profile back over the backup.
+    const saved = restored.profile;
+    setDraft({
+      level: saved.level,
+      minutes: saved.minutes,
+      days: saved.days,
+      focuses: saved.focuses,
+      goalLabel: saved.goal?.label ?? "",
+      goalDate: saved.goal?.date ?? "",
+      protectHands: saved.protectHands,
+    });
+    setStarters({});
+    setPendingRestore(null);
+    setDataMsg({ kind: "ok", text: `Restored ${countText(restored)}.` });
   };
 
   const canNext = () => {
@@ -363,6 +429,52 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
           <button type="button" className="btn btn--ghost btn--block" onClick={() => setStep(lastStep)}>
             Skip to the end
           </button>
+        ) : null}
+
+        {mode === "edit" ? (
+          <div className="card" style={{ marginTop: 12 }}>
+            <h2 className="section-title">Your data</h2>
+            <p className="tiny muted">
+              Everything lives on this device only. Export a backup before clearing browser data or moving to another phone; restore it
+              here to bring the repertoire, session history and tempo marks back.
+            </p>
+            <div className="btn-row" style={{ marginTop: 10 }}>
+              <button type="button" className="btn btn--small" onClick={exportBackup}>
+                Export backup
+              </button>
+              <button type="button" className="btn btn--small" onClick={() => fileRef.current?.click()}>
+                Restore from file
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json,.json"
+                aria-label="Choose a Cuerda backup file"
+                style={{ display: "none" }}
+                onChange={chooseBackup}
+              />
+            </div>
+            {dataMsg ? (
+              <div className={`notice ${dataMsg.kind === "error" ? "notice--warn" : "notice--info"}`} style={{ marginTop: 10 }}>
+                {dataMsg.text}
+              </div>
+            ) : null}
+            {pendingRestore ? (
+              <div className="notice notice--warn" style={{ marginTop: 10 }}>
+                This backup holds {countText(pendingRestore.state)}
+                {pendingRestore.exportedAt ? `, exported ${new Date(pendingRestore.exportedAt).toLocaleDateString()}` : ""}. Restoring replaces
+                everything currently on this device.
+                <div className="btn-row" style={{ marginTop: 8 }}>
+                  <button type="button" className="btn btn--small" onClick={() => setPendingRestore(null)}>
+                    Cancel
+                  </button>
+                  <button type="button" className="btn btn--small btn--primary" onClick={applyRestore}>
+                    Replace with this backup
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
         ) : null}
 
         {mode === "edit" ? (

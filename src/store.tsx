@@ -85,6 +85,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState(emptyState());
   }, []);
 
+  const restoreState = useCallback((next: AppState) => {
+    setState(next);
+  }, []);
+
   const value: StoreValue = {
     state,
     ready,
@@ -102,6 +106,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addTempo,
     deleteTempo,
     removeAll,
+    restoreState,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

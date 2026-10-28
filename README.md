@@ -46,9 +46,14 @@ exact install.
 
 Everything is stored in `localStorage` under `cuerda.state.v1` (schema version
 `1`). It is per browser and per device: clearing site data, using private
-browsing, or switching device starts you from an empty state, and there is no
-sync or export. `src/store/model.ts` holds the load/save and the version check;
+browsing, or switching device starts you from an empty state. There is no sync
+and no account. `src/store/model.ts` holds the load/save and the version check;
 a version mismatch falls back to a fresh state rather than guessing.
+
+For moving or safeguarding that data, **Settings → Your data** exports a dated
+JSON backup and restores one from a file. The file is version-checked and read
+through the same validation as stored state, so an unreadable field is dropped
+without losing the rest; `src/store/backup.ts` holds the format.
 
 ## Deploying
 

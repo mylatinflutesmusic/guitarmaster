@@ -3,7 +3,9 @@ import type { WeekPlan } from "../types";
 import { todayKey } from "../engine/dates";
 
 const STORAGE_KEY = "cuerda.state.v1";
-const VERSION = 1;
+/** Schema version understood by this build. */
+export const STATE_VERSION = 1;
+const VERSION = STATE_VERSION;
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -26,30 +28,34 @@ export function emptyState(): AppState {
   return { version: VERSION, profile: defaultProfile(), pieces: [], log: [], tempos: [] };
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
- * Restore from this device. A state from another schema version, or one that is
- * not readable at all, falls back to a fresh state; a single malformed field is
+ * Read a stored or exported state. A state from another schema version, or one
+ * that is not an object at all, is rejected outright; a single malformed field is
  * ignored so the rest of the repertoire and history still load. In particular no
  * collection reaches the planner unless it really is a list.
  */
+export function parseState(value: unknown): AppState | null {
+  if (!isRecord(value) || value.version !== VERSION) return null;
+  const profile = isRecord(value.profile) ? (value.profile as Partial<Profile>) : {};
+  return {
+    version: VERSION,
+    profile: { ...defaultProfile(), ...profile },
+    pieces: Array.isArray(value.pieces) ? (value.pieces as Piece[]) : [],
+    log: Array.isArray(value.log) ? (value.log as LogEntry[]) : [],
+    tempos: Array.isArray(value.tempos) ? (value.tempos as TempoMark[]) : [],
+  };
+}
+
+/** Restore from this device, falling back to a fresh state if nothing readable is saved. */
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyState();
-    const parsed = JSON.parse(raw) as unknown;
-    if (!isRecord(parsed) || parsed.version !== VERSION) return emptyState();
-    const profile = isRecord(parsed.profile) ? (parsed.profile as Partial<Profile>) : {};
-    return {
-      version: VERSION,
-      profile: { ...defaultProfile(), ...profile },
-      pieces: Array.isArray(parsed.pieces) ? (parsed.pieces as Piece[]) : [],
-      log: Array.isArray(parsed.log) ? (parsed.log as LogEntry[]) : [],
-      tempos: Array.isArray(parsed.tempos) ? (parsed.tempos as TempoMark[]) : [],
-    };
+    return parseState(JSON.parse(raw)) ?? emptyState();
   } catch {
     return emptyState();
   }
@@ -90,4 +96,6 @@ export interface StoreValue {
   addTempo: (input: Omit<TempoMark, "id">) => void;
   deleteTempo: (id: string) => void;
   removeAll: () => void;
+  /** Replace everything on this device with a restored backup. */
+  restoreState: (state: AppState) => void;
 }
