@@ -3,12 +3,12 @@ import { useStore } from "../store";
 import { addDaysKey, formatMinutes, shortDate, startOfWeek, toKey, todayKey } from "../engine/dates";
 import { lastNDays, logStreak, splitMinutes, tempoChange } from "../engine/stats";
 import { TECHNIQUES } from "../data/library";
-import { backupAgeLabel } from "../store/backup";
+import { backupAgeLabel, downloadBackup } from "../store/backup";
 import { Icon } from "../components/Icon";
 import { SectionHelp } from "../components/SectionHelp";
 
 export function Progress() {
-  const { state, addTempo, deleteTempo, deleteLog } = useStore();
+  const { state, addTempo, deleteTempo, deleteLog, updateProfile } = useStore();
   const today = todayKey();
   const days = useMemo(() => lastNDays(state.log, 14, today), [state.log, today]);
   const max = Math.max(15, ...days.map((d) => d.minutes));
@@ -21,6 +21,7 @@ export function Progress() {
   const last28 = splitMinutes(state.log, dayKeyMinus(28));
   const [bpm, setBpm] = useState("72");
   const [subjectId, setSubjectId] = useState("");
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
 
   const subjects = [
     ...TECHNIQUES.map((t) => ({ id: t.id, name: t.name })),
@@ -182,9 +183,27 @@ export function Progress() {
           <h3 className="section-title">Session log</h3>
           <span className="tiny muted">{state.log.length} entries</span>
         </div>
-        <p className="tiny muted" style={{ marginTop: 4 }}>
-          {backupAgeLabel(state.profile.lastBackupAt)}
-        </p>
+        <div className="row row--between" style={{ marginTop: 4, gap: 10 }}>
+          <span className="tiny muted" style={{ flex: 1, minWidth: 0 }}>
+            {backupAgeLabel(state.profile.lastBackupAt)}
+          </span>
+          <button
+            type="button"
+            className="btn btn--small"
+            onClick={() => {
+              const filename = downloadBackup(state);
+              updateProfile({ lastBackupAt: today, backupSnoozedUntil: undefined });
+              setBackupMsg(`Saved ${filename} — ${state.log.length} session${state.log.length === 1 ? "" : "s"}, ${state.pieces.length} piece${state.pieces.length === 1 ? "" : "s"}.`);
+            }}
+          >
+            Back up now
+          </button>
+        </div>
+        {backupMsg ? (
+          <p className="tiny" style={{ marginTop: 4, color: "var(--ok)" }} role="status">
+            {backupMsg}
+          </p>
+        ) : null}
         {state.log.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
             {[...state.log]
