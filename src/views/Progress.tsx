@@ -3,6 +3,7 @@ import { useStore } from "../store";
 import { addDaysKey, formatMinutes, shortDate, startOfWeek, toKey, todayKey } from "../engine/dates";
 import { lastNDays, logStreak, splitMinutes, tempoChange } from "../engine/stats";
 import { TECHNIQUES } from "../data/library";
+import { backupAgeLabel } from "../store/backup";
 import { Icon } from "../components/Icon";
 import { SectionHelp } from "../components/SectionHelp";
 
@@ -181,6 +182,9 @@ export function Progress() {
           <h3 className="section-title">Session log</h3>
           <span className="tiny muted">{state.log.length} entries</span>
         </div>
+        <p className="tiny muted" style={{ marginTop: 4 }}>
+          {backupAgeLabel(state.profile.lastBackupAt)}
+        </p>
         {state.log.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
             {[...state.log]

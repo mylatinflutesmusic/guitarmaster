@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { LEVELS } from "../types";
 import type { AppState, Level, RepStatus } from "../types";
-import { WEEKDAY_SHORT, daysBetween, todayKey } from "../engine/dates";
-import { downloadBackup, parseBackup } from "../store/backup";
+import { WEEKDAY_SHORT, todayKey } from "../engine/dates";
+import { backupAgeLabel, downloadBackup, parseBackup } from "../store/backup";
 import type { ParsedBackup } from "../store/backup";
 import { focusChoices } from "../data/library";
 import { STARTERS } from "../data/starters";
@@ -44,7 +44,6 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
   const [starters, setStarters] = useState<Record<string, RepStatus>>({});
 
   const focuses = useMemo(() => focusChoices(draft.level), [draft.level]);
-  const backupAge = profile.lastBackupAt ? daysBetween(profile.lastBackupAt, todayKey()) : undefined;
   // First run: welcome, level, time, limits, goal, repertoire. Editing skips the
   // welcome and the starter-repertoire screen.
   const firstStep = mode === "first-run" ? 0 : 1;
@@ -434,11 +433,7 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
               here to bring the repertoire, session history and tempo marks back.
             </p>
             <p className="tiny muted" style={{ marginTop: 6 }}>
-              {backupAge === undefined
-                ? "No backup taken yet."
-                : backupAge === 0
-                  ? "Last backup: today."
-                  : `Last backup: ${backupAge} day${backupAge === 1 ? "" : "s"} ago.`}
+              {backupAgeLabel(profile.lastBackupAt)}
             </p>
             <div className="btn-row" style={{ marginTop: 10 }}>
               <button type="button" className="btn btn--small" onClick={exportBackup}>

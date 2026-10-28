@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { backupDue, backupFilename, backupJson, parseBackup } from "./backup";
+import { backupAgeLabel, backupDue, backupFilename, backupJson, parseBackup } from "./backup";
 import { emptyState } from "./model";
 import type { AppState } from "../types";
 
@@ -112,6 +112,24 @@ describe("parseBackup", () => {
     expect("error" in result).toBe(false);
     if ("error" in result) return;
     expect(result.exportedAt).toBeUndefined();
+  });
+});
+
+describe("backupAgeLabel", () => {
+  const reference = "2026-10-28";
+
+  it("says when there has never been a backup", () => {
+    expect(backupAgeLabel(undefined, reference)).toBe("Never backed up.");
+  });
+
+  it("counts days since the last backup", () => {
+    expect(backupAgeLabel(reference, reference)).toBe("Backed up today.");
+    expect(backupAgeLabel("2026-10-27", reference)).toBe("Last backed up 1 day ago.");
+    expect(backupAgeLabel("2026-09-18", reference)).toBe("Last backed up 40 days ago.");
+  });
+
+  it("does not report a negative age from a future date", () => {
+    expect(backupAgeLabel("2026-11-01", reference)).toBe("Backed up today.");
   });
 });
 

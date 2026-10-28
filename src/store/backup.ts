@@ -103,6 +103,14 @@ export function backupDue(state: AppState, reference = todayKey()): BackupStatus
   return { due, historyDays, lastBackupAt, daysSinceBackup };
 }
 
+/** How recent the last backup is, phrased for the screens that show it. */
+export function backupAgeLabel(lastBackupAt: string | undefined, reference = todayKey()): string {
+  if (!lastBackupAt) return "Never backed up.";
+  const days = daysBetween(lastBackupAt, reference);
+  if (days <= 0) return "Backed up today.";
+  return `Last backed up ${days} day${days === 1 ? "" : "s"} ago.`;
+}
+
 /** Write the backup to the guitarist's downloads. Returns the filename. */
 export function downloadBackup(state: AppState, dateKey = todayKey()): string {
   const filename = backupFilename(dateKey);
