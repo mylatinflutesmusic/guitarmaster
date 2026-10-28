@@ -1,5 +1,7 @@
 # Cuerda
 
+[![Build](https://github.com/mylatinflutesmusic/guitarmaster/actions/workflows/build.yml/badge.svg)](https://github.com/mylatinflutesmusic/guitarmaster/actions/workflows/build.yml)
+
 A practice planner for classical guitarists. It takes the minutes you actually
 have and decides what they are worth: which technique work, which piece, which
 method, in an order that does not overload the hands.
