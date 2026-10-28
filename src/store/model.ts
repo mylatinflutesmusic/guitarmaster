@@ -1,4 +1,4 @@
-import type { AppState, LoggedBlock, Phase, Piece, Profile, TempoMark } from "../types";
+import type { AppState, LogEntry, LoggedBlock, Phase, Piece, Profile, TempoMark } from "../types";
 import type { WeekPlan } from "../types";
 import { todayKey } from "../engine/dates";
 
@@ -26,19 +26,29 @@ export function emptyState(): AppState {
   return { version: VERSION, profile: defaultProfile(), pieces: [], log: [], tempos: [] };
 }
 
-/** Restore from this device. Anything unexpected falls back to a fresh state. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Restore from this device. A state from another schema version, or one that is
+ * not readable at all, falls back to a fresh state; a single malformed field is
+ * ignored so the rest of the repertoire and history still load. In particular no
+ * collection reaches the planner unless it really is a list.
+ */
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyState();
-    const parsed = JSON.parse(raw) as Partial<AppState>;
-    if (!parsed || parsed.version !== VERSION) return emptyState();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!isRecord(parsed) || parsed.version !== VERSION) return emptyState();
+    const profile = isRecord(parsed.profile) ? (parsed.profile as Partial<Profile>) : {};
     return {
       version: VERSION,
-      profile: { ...defaultProfile(), ...(parsed.profile ?? {}) },
-      pieces: parsed.pieces ?? [],
-      log: parsed.log ?? [],
-      tempos: parsed.tempos ?? [],
+      profile: { ...defaultProfile(), ...profile },
+      pieces: Array.isArray(parsed.pieces) ? (parsed.pieces as Piece[]) : [],
+      log: Array.isArray(parsed.log) ? (parsed.log as LogEntry[]) : [],
+      tempos: Array.isArray(parsed.tempos) ? (parsed.tempos as TempoMark[]) : [],
     };
   } catch {
     return emptyState();
