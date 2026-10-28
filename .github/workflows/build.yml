@@ -1,0 +1,37 @@
+name: Build
+
+# Verified on every change to main and on pull requests, so a commit that does
+# not compile is visible on GitHub before it reaches the live site.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run separately from the build so a type error is reported as a type
+      # error rather than an anonymous build failure. `npm run build` includes
+      # the same check, so it also guards anyone running the script locally.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
