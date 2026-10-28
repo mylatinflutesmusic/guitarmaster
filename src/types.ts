@@ -258,6 +258,10 @@ export interface Profile {
   focusPieceId?: string;
   /** Which first-run tour has been seen (or skipped); older tours are below this. */
   tourVersion?: number;
+  /** Day the last full backup was exported. */
+  lastBackupAt?: string;
+  /** Reminder hidden until this day, so it does not nag on every session. */
+  backupSnoozedUntil?: string;
   createdAt: string;
 }
 

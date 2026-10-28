@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { backupFilename, backupJson, parseBackup } from "./backup";
+import { backupDue, backupFilename, backupJson, parseBackup } from "./backup";
 import { emptyState } from "./model";
 import type { AppState } from "../types";
 
@@ -112,5 +112,72 @@ describe("parseBackup", () => {
     expect("error" in result).toBe(false);
     if ("error" in result) return;
     expect(result.exportedAt).toBeUndefined();
+  });
+});
+
+describe("backupDue", () => {
+  const reference = "2026-10-28";
+
+  const withHistory = (dates: string[], profileOver: Partial<AppState["profile"]> = {}): AppState => {
+    const base = saved();
+    return {
+      ...base,
+      profile: { ...base.profile, ...profileOver },
+      log: dates.map((date, index) => ({
+        id: `l${index}`,
+        date,
+        minutes: 30,
+        plannedMinutes: 30,
+        phase: "foundation",
+        blocks: [],
+      })),
+    };
+  };
+
+  it("stays quiet with no history to lose", () => {
+    expect(backupDue(withHistory([]), reference)).toEqual({ due: false, historyDays: 0 });
+  });
+
+  it("stays quiet while the history is still young", () => {
+    const status = backupDue(withHistory(["2026-10-08"]), reference);
+    expect(status.historyDays).toBe(20);
+    expect(status.due).toBe(false);
+  });
+
+  it("asks for a backup once the history reaches thirty days", () => {
+    const status = backupDue(withHistory(["2026-09-28"]), reference);
+    expect(status.historyDays).toBe(30);
+    expect(status.due).toBe(true);
+    expect(status.daysSinceBackup).toBeUndefined();
+  });
+
+  it("uses the oldest session, not the newest", () => {
+    const status = backupDue(withHistory(["2026-08-01", "2026-10-27", "2026-10-28"]), reference);
+    expect(status.historyDays).toBe(88);
+    expect(status.due).toBe(true);
+  });
+
+  it("stays quiet after a recent backup", () => {
+    const status = backupDue(withHistory(["2026-08-01"], { lastBackupAt: "2026-10-18" }), reference);
+    expect(status.daysSinceBackup).toBe(10);
+    expect(status.due).toBe(false);
+  });
+
+  it("asks again once the last backup is thirty days old", () => {
+    const status = backupDue(withHistory(["2026-08-01"], { lastBackupAt: "2026-09-28" }), reference);
+    expect(status.daysSinceBackup).toBe(30);
+    expect(status.due).toBe(true);
+  });
+
+  it("does not ask again on the day of a backup", () => {
+    const status = backupDue(withHistory(["2026-08-01"], { lastBackupAt: reference }), reference);
+    expect(status.daysSinceBackup).toBe(0);
+    expect(status.due).toBe(false);
+  });
+
+  it("honours a snooze until the chosen day, then asks again", () => {
+    expect(backupDue(withHistory(["2026-08-01"], { backupSnoozedUntil: "2026-11-05" }), reference).due).toBe(false);
+    expect(backupDue(withHistory(["2026-08-01"], { backupSnoozedUntil: reference }), reference).due).toBe(false);
+    expect(backupDue(withHistory(["2026-08-01"], { backupSnoozedUntil: "2026-10-27" }), reference).due).toBe(true);
   });
 });

@@ -55,6 +55,11 @@ JSON backup and restores one from a file. The file is version-checked and read
 through the same validation as stored state, so an unreadable field is dropped
 without losing the rest; `src/store/backup.ts` holds the format.
 
+Once the logged history is at least 30 days old and the last backup is missing
+or 30 days stale, a reminder appears at the top of Practice with a one-tap
+export. “Later” hides it for two weeks (`backupSnoozedUntil`), so it never asks
+twice in a session.
+
 ## Deploying
 
 The site is static files served by a Worker:

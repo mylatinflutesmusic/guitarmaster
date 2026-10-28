@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { LEVELS } from "../types";
 import type { AppState, Level, RepStatus } from "../types";
-import { WEEKDAY_SHORT, todayKey } from "../engine/dates";
-import { backupFilename, backupJson, parseBackup } from "../store/backup";
+import { WEEKDAY_SHORT, daysBetween, todayKey } from "../engine/dates";
+import { downloadBackup, parseBackup } from "../store/backup";
 import type { ParsedBackup } from "../store/backup";
 import { focusChoices } from "../data/library";
 import { STARTERS } from "../data/starters";
@@ -44,6 +44,7 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
   const [starters, setStarters] = useState<Record<string, RepStatus>>({});
 
   const focuses = useMemo(() => focusChoices(draft.level), [draft.level]);
+  const backupAge = profile.lastBackupAt ? daysBetween(profile.lastBackupAt, todayKey()) : undefined;
   // First run: welcome, level, time, limits, goal, repertoire. Editing skips the
   // welcome and the starter-repertoire screen.
   const firstStep = mode === "first-run" ? 0 : 1;
@@ -85,16 +86,8 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
   };
 
   const exportBackup = () => {
-    const blob = new Blob([backupJson(state)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = backupFilename(todayKey());
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    // Revoke after the browser has taken the file, not before.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBackup(state);
+    updateProfile({ lastBackupAt: todayKey(), backupSnoozedUntil: undefined });
     setDataMsg({ kind: "ok", text: `Backup downloaded — ${countText(state)}.` });
   };
 
@@ -124,6 +117,8 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
     if (!pendingRestore) return;
     const restored = pendingRestore.state;
     restoreState(restored);
+    // The file this came from is itself a backup, so do not nag about one today.
+    updateProfile({ lastBackupAt: todayKey(), backupSnoozedUntil: undefined });
     // Keep the settings form in step with what was restored, so tapping “Save
     // changes” afterwards cannot put the old profile back over the backup.
     const saved = restored.profile;
@@ -437,6 +432,13 @@ export function Setup({ mode, onDone }: { mode: "first-run" | "edit"; onDone?: (
             <p className="tiny muted">
               Everything lives on this device only. Export a backup before clearing browser data or moving to another phone; restore it
               here to bring the repertoire, session history and tempo marks back.
+            </p>
+            <p className="tiny muted" style={{ marginTop: 6 }}>
+              {backupAge === undefined
+                ? "No backup taken yet."
+                : backupAge === 0
+                  ? "Last backup: today."
+                  : `Last backup: ${backupAge} day${backupAge === 1 ? "" : "s"} ago.`}
             </p>
             <div className="btn-row" style={{ marginTop: 10 }}>
               <button type="button" className="btn btn--small" onClick={exportBackup}>

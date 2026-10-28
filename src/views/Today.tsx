@@ -11,6 +11,7 @@ import { PieceSheet } from "../components/PieceSheet";
 import { technique as getTechnique } from "../data/library";
 import { Icon } from "../components/Icon";
 import { SectionHelp } from "../components/SectionHelp";
+import { BackupReminder } from "../components/BackupReminder";
 
 const QUICK_MINUTES = [15, 25, 45, 70];
 
@@ -56,6 +57,8 @@ export function Today() {
   return (
     <div className="view">
       <SectionHelp topic="today" />
+
+      <BackupReminder />
 
       <div className="card card--accent">
         <div className="row row--between">
