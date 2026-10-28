@@ -23,6 +23,7 @@ Other scripts:
 | `npm run build` | Typecheck, then build the static site into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally |
 | `npm run typecheck` | `tsc --noEmit` only |
+| `npm test` | Run the planner and practice-history tests (Vitest) |
 
 Requires Node 18 or newer. The lockfile is npm's, so use `npm ci` if you want an
 exact install.

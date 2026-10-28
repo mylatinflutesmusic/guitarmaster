@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test
+        run: npm test
+
       # Run separately from the build so a type error is reported as a type
       # error rather than an anonymous build failure. `npm run build` includes
       # the same check, so it also guards anyone running the script locally.
