@@ -54,7 +54,7 @@ export function App() {
               aria-label="Review the quick tour"
               title="Quick tour"
             >
-              <Icon name="help" size={19} />
+              <Icon name="tour" size={19} />
             </button>
             <button type="button" className="icon-btn" onClick={() => setEditing(true)} aria-label="Practice settings">
               <Icon name="gear" size={19} />

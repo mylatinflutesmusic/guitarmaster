@@ -11,6 +11,7 @@ interface IconProps {
     | "check"
     | "plus"
     | "minus"
+    | "tour"
     | "help";
   size?: number;
 }
@@ -28,6 +29,7 @@ const PATHS: Record<IconProps["name"], string> = {
   plus: "M12 5v14M5 12h14",
   minus: "M5 12h14",
   help: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.4 9.2a2.7 2.7 0 015.2.9c0 1.8-2.6 2.1-2.6 4M12 17.2h.01",
+  tour: "M6 6h12M12 6v13",
 };
 
 export function Icon({ name, size = 22 }: IconProps) {

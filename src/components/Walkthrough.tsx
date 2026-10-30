@@ -26,7 +26,7 @@ const STEPS: Step[] = [
     tab: "today",
     target: ".icon-btn--help",
     title: "Every section explains itself",
-    body: "Tap the ? at the top right of a section for what it is for, the order to work in there, and what catches guitarists out. This tour sits behind the ? next to the settings cog if you ever want it again.",
+    body: "Tap the ? at the top right of a section for what it is for, the order to work in there, and what catches guitarists out. This tour sits behind the T next to the settings cog if you ever want it again.",
   },
   {
     tab: "week",
