@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import type { AppState, LogEntry, Piece, TempoMark } from "./types";
 import { buildWeek, currentPhase } from "./engine/plan";
-import { emptyState, loadState, saveState, uid } from "./store/model";
+import { emptyState, keepTourSeen, loadState, saveState, uid } from "./store/model";
 import type { SessionLogInput, StoreValue } from "./store/model";
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -82,11 +82,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeAll = useCallback(() => {
-    setState(emptyState());
+    // Erase the practice book, not the fact that this device has been shown
+    // around: starting over should not replay the tour.
+    setState((prev) => {
+      const fresh = emptyState();
+      return { ...fresh, profile: { ...fresh.profile, tourVersion: prev.profile.tourVersion } };
+    });
   }, []);
 
   const restoreState = useCallback((next: AppState) => {
-    setState(next);
+    // A backup made before the tour existed would otherwise play it again.
+    setState((prev) => ({
+      ...next,
+      profile: { ...next.profile, tourVersion: keepTourSeen(prev.profile.tourVersion, next.profile.tourVersion) },
+    }));
   }, []);
 
   const value: StoreValue = {

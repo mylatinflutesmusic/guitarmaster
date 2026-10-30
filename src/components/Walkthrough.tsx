@@ -26,7 +26,7 @@ const STEPS: Step[] = [
     tab: "today",
     target: ".icon-btn--help",
     title: "Every section explains itself",
-    body: "Tap the ? at the top right for what a section is for, the order to work in there, and what catches guitarists out.",
+    body: "Tap the ? at the top right of a section for what it is for, the order to work in there, and what catches guitarists out. This tour sits behind the ? next to the settings cog if you ever want it again.",
   },
   {
     tab: "week",
@@ -54,7 +54,16 @@ const STEPS: Step[] = [
   },
 ];
 
-export function Walkthrough({ onDone, onNavigate }: { onDone: () => void; onNavigate: (tab: TabId) => void }) {
+export function Walkthrough({
+  onDone,
+  onNavigate,
+  review = false,
+}: {
+  onDone: () => void;
+  onNavigate: (tab: TabId) => void;
+  /** Reopened from the header rather than shown for the first time. */
+  review?: boolean;
+}) {
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
   const step = STEPS[index];
@@ -134,7 +143,7 @@ export function Walkthrough({ onDone, onNavigate }: { onDone: () => void; onNavi
         </p>
         <div className="btn-row" style={{ marginTop: 14, alignItems: "center" }}>
           <button type="button" className="btn btn--ghost" onClick={onDone}>
-            Skip tour
+            {review ? "Close tour" : "Skip tour"}
           </button>
           <span className="spacer" />
           <button
@@ -142,7 +151,7 @@ export function Walkthrough({ onDone, onNavigate }: { onDone: () => void; onNavi
             className="btn btn--primary"
             onClick={() => (last ? onDone() : setIndex((i) => i + 1))}
           >
-            {last ? "Start practising" : "Next"}
+            {last ? (review ? "Done" : "Start practising") : "Next"}
             {last ? null : <Icon name="play" size={14} />}
           </button>
         </div>

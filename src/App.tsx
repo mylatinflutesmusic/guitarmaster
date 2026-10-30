@@ -16,6 +16,9 @@ export function App() {
   const { state, ready, updateProfile } = useStore();
   const [tab, setTab] = useState<TabId>("today");
   const [editing, setEditing] = useState(false);
+  /** The tour, replayed on demand from the header. */
+  const [reviewingTour, setReviewingTour] = useState(false);
+  const seenTour = state.profile.tourVersion ?? 0;
 
   if (!ready) {
     return (
@@ -26,7 +29,9 @@ export function App() {
   }
 
   if (!state.profile.onboarded) {
-    return <Setup mode="first-run" />;
+    // Erasing from settings drops back to the first run with the settings screen
+    // still open behind it; finishing that must close it too.
+    return <Setup mode="first-run" onDone={() => setEditing(false)} />;
   }
 
   if (editing) {
@@ -42,6 +47,15 @@ export function App() {
               <h1 className="app-title">Cuerda</h1>
               <div className="app-sub">{longDate()}</div>
             </div>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setReviewingTour(true)}
+              aria-label="Review the quick tour"
+              title="Quick tour"
+            >
+              <Icon name="help" size={19} />
+            </button>
             <button type="button" className="icon-btn" onClick={() => setEditing(true)} aria-label="Practice settings">
               <Icon name="gear" size={19} />
             </button>
@@ -55,11 +69,13 @@ export function App() {
         {tab === "library" ? <Library /> : null}
       </div>
       <TabBar active={tab} onChange={setTab} />
-      {(state.profile.tourVersion ?? 0) < TOUR_VERSION ? (
+      {(seenTour < TOUR_VERSION || reviewingTour) ? (
         <Walkthrough
+          review={reviewingTour}
           onNavigate={setTab}
           onDone={() => {
             updateProfile({ tourVersion: TOUR_VERSION });
+            setReviewingTour(false);
             setTab("today");
           }}
         />

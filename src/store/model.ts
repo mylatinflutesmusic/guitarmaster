@@ -28,6 +28,15 @@ export function emptyState(): AppState {
   return { version: VERSION, profile: defaultProfile(), pieces: [], log: [], tempos: [] };
 }
 
+/**
+ * The tour is a fact about this device rather than practice data, so "already
+ * seen" survives erasing the book and restoring an older backup: keep whichever
+ * version is higher.
+ */
+export function keepTourSeen(deviceSeen: number | undefined, incoming: number | undefined): number {
+  return Math.max(deviceSeen ?? 0, incoming ?? 0);
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

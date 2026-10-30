@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { emptyState, loadState, saveState } from "./model";
+import { emptyState, keepTourSeen, loadState, saveState } from "./model";
 import type { AppState } from "../types";
 
 const KEY = "cuerda.state.v1";
@@ -189,5 +189,20 @@ describe("saveState", () => {
     };
 
     expect(() => saveState(saved())).not.toThrow();
+  });
+});
+
+describe("keepTourSeen", () => {
+  it("keeps the tour this device has already shown when its data is erased", () => {
+    expect(keepTourSeen(2, undefined)).toBe(2);
+  });
+
+  it("keeps a newer tour coming in from a backup", () => {
+    expect(keepTourSeen(1, 2)).toBe(2);
+  });
+
+  it("treats a never-seen device and a tourless backup as zero", () => {
+    expect(keepTourSeen(undefined, undefined)).toBe(0);
+    expect(keepTourSeen(undefined, 2)).toBe(2);
   });
 });
